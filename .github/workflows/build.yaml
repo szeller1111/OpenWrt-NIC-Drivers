@@ -77,17 +77,14 @@ jobs:
       with:
         name: ${{ env.KMOD_VERSION }}
 
-    - name: Upload build artifacts to cloud
-      run: |
-        mkdir -p ${{ github.workspace }}/artifact
-        for ipk in `find . -name '*.ipk'`; do
-          mv $ipk ${{ github.workspace }}/artifact
-        done
-        cd artifact && md5sum *.ipk > md5sum.txt
-        cd ..
+    - name: Upload buildinfo
+      uses: actions/upload-artifact@v2
+      with:
+        name: OpenWrt_buildinfo
+        path: ./artifact/buildinfo/
 
-        wget -O release.txt $RELEASE_URL
-        echo -e "\nUpdated at $(date)" >> release.txt
-
-      env:
-        GITHUB_TOKEN: ${{ secrets.ACTION_GITHUB_TOKEN }}
+    - name: Upload package
+      uses: actions/upload-artifact@v2
+      with:
+        name: OpenWrt_package
+        path: ./artifact/package/
