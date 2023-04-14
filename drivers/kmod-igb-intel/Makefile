@@ -7,12 +7,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=kmod-igb-intel
-PKG_VERSION:=5.11.4
+PKG_VERSION:=5.13.16
 PKG_RELEASE:=1
 
 PKG_SOURCE:=igb-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://downloads.sourceforge.net/project/e1000/igb%20stable/$(PKG_VERSION)/
-PKG_MD5SUM:=82fdf86b46f0f16869de7b9b9d0f3d6b
+PKG_SOURCE_URL:=https://sourceforge.net/projects/e1000/files/igb%20stable/$(PKG_VERSION)/
+PKG_MD5SUM:=e9b5327b786de16f4b4ccd03e147ca0d
 
 include $(INCLUDE_DIR)/kernel.mk
 include $(INCLUDE_DIR)/package.mk
@@ -46,8 +46,3 @@ define KernelPackage/igb-intel/description
 endef
 
 $(eval $(call KernelPackage,igb-intel))
-
-#echo 'CONFIG_PACKAGE_kmod-igb-intel=m' > .config
-#make defconfig
-#make package/kmod-igb-intel/compile -j1 V=s
-
