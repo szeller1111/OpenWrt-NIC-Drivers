@@ -6,11 +6,6 @@ on:
     branches:
       - 'main'
 
-env:
-  RELEASE_URL: https://gist.githubusercontent.com/csrutil/a448f7d1e9d6f0b8487fabd45dfc759f/raw/26642dc5b5a35cc954e14c7cd5edea8f197dc30d/OpenWrt-NIC-Drivers-release.txt
-  KMOD_VERSION: 9.010.01x5.11.4
-  APT_URL: https://gist.githubusercontent.com/csrutil/6d83b7dd62b5652697fe22271fbee482/raw/5149abcc3ca3ee48f95978949db528d6bf765daa/depends-ubuntu-2004
-
 jobs:
   build_Modules:
     runs-on: ubuntu-20.04
@@ -19,9 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         sdk_url:
-          - https://downloads.openwrt.org/releases/19.07.10/targets/x86/64/openwrt-sdk-19.07.10-x86-64_gcc-7.5.0_musl.Linux-x86_64.tar.xz
-          - https://downloads.openwrt.org/releases/21.02.5/targets/x86/64/openwrt-sdk-21.02.5-x86-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz
-          - https://downloads.openwrt.org/releases/22.03.3/targets/x86/64/openwrt-sdk-22.03.3-x86-64_gcc-11.2.0_musl.Linux-x86_64.tar.xz
+            - https://downloads.immortalwrt.org/releases/21.02.5/targets/x86/64/immortalwrt-sdk-21.02.5-x86-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz
 
     steps:
     - name: Checkout
@@ -54,26 +47,14 @@ jobs:
         sdk=$(basename $url | awk -F '.tar.xz' '{ print $1 }')
 
         cd $sdk
-        echo 'CONFIG_PACKAGE_kmod-r8125=m' > .config
-        echo 'CONFIG_PACKAGE_kmod-r8152=m' >> .config
         echo 'CONFIG_PACKAGE_kmod-igb-intel=m' >> .config
         make defconfig
         
-        make package/r8125/compile -j$(nproc) || make package/r8125/compile -j1 V=sc || exit 0
-        make package/r8152/compile -j$(nproc) || make package/r8152/compile -j1 V=sc || exit 0
         make package/kmod-igb-intel/compile -j$(nproc) || make package/kmod-igb-intel/compile -j1 V=sc || exit 0
 
         # cp file to artifact
         cd ${{ github.workspace }}
         mkdir -p ${{ github.workspace }}/artifact
-
-        for ipk in `find . -name 'kmod-r8125*.ipk'`; do
-          cp $ipk ${{ github.workspace }}/artifact
-        done
-
-        for ipk in `find . -name 'kmod-r8152*.ipk'`; do
-          cp $ipk ${{ github.workspace }}/artifact
-        done
 
         for ipk in `find . -name 'kmod-igb-intel*.ipk'`; do
           cp $ipk ${{ github.workspace }}/artifact
@@ -108,26 +89,6 @@ jobs:
         wget -O release.txt $RELEASE_URL
         echo -e "\nUpdated at $(date)" >> release.txt
 
-    - name: Upload firmware to release
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.ACTION_GITHUB_TOKEN }}
-      with:
-        name: ${{ env.KMOD_VERSION }}
-        tag_name: ${{ env.KMOD_VERSION }}
-        body_path: release.txt
-        files: artifact/**/*
-
-    - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@v0.2.0
-      with:
-        keep_latest: 2
-        delete_tags: true
-        delete_tag_pattern: ${{ env.KMOD_VERSION }}
       env:
         GITHUB_TOKEN: ${{ secrets.ACTION_GITHUB_TOKEN }}
 
-    - name: Delete Artifacts
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: ${{ env.KMOD_VERSION }}
