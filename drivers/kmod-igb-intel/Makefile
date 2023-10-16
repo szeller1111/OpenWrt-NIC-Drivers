@@ -46,3 +46,4 @@ define KernelPackage/igb-intel/description
 endef
 
 $(eval $(call KernelPackage,igb-intel))
+
