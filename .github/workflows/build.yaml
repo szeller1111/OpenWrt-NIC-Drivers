@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         sdk_url:
-            - https://downloads.immortalwrt.org/releases/21.02.5/targets/x86/64/immortalwrt-sdk-21.02.5-x86-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz
+            - https://downloads.immortalwrt.org/releases/23.05.0-rc4/targets/x86/64/immortalwrt-sdk-23.05.0-rc4-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
 
     steps:
     - name: Checkout
