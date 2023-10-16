@@ -1,25 +1,27 @@
-name: Build OpenWrt ethernet drivers
+name: Build NIC driver for OpenWrt
 
-# on: [push, pull_request]
 on:
   push:
-    branches: 
+    branches:
       - main
   # schedule:
-  #   - cron: 0 20 * * *
-  release:
-    types: [published]
+  #   - cron: "0 0 * * MON"
 
+
+env:
+  RELEASE_URL: https://gist.githubusercontent.com/csrutil/a448f7d1e9d6f0b8487fabd45dfc759f/raw/26642dc5b5a35cc954e14c7cd5edea8f197dc30d/OpenWrt-NIC-Drivers-release.txt
+  KMOD_VERSION: 9.011.01
+  APT_URL: https://gist.githubusercontent.com/csrutil/6d83b7dd62b5652697fe22271fbee482/raw/5149abcc3ca3ee48f95978949db528d6bf765daa/depends-ubuntu-2004
 
 jobs:
-  build_Modules:
+  build_igb-intel_Modules:
     runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
       matrix:
         sdk_url:
-            - https://downloads.immortalwrt.org/releases/23.05.0-rc4/targets/x86/64/immortalwrt-sdk-23.05.0-rc4-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          - https://downloads.immortalwrt.org/releases/23.05.0-rc4/targets/x86/64/immortalwrt-sdk-23.05.0-rc4-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
 
     steps:
     - name: Checkout
@@ -44,7 +46,7 @@ jobs:
         tar xvf $sdk.tar.xz
 
         mkdir -p $sdk/package
-        cp -r drivers/* $sdk/package/
+        cp -r drivers/kmod-igb-intel $sdk/package/
 
     - name: Compile
       run: |
@@ -52,7 +54,7 @@ jobs:
         sdk=$(basename $url | awk -F '.tar.xz' '{ print $1 }')
 
         cd $sdk
-        echo 'CONFIG_PACKAGE_kmod-igb-intel=m' >> .config
+        echo 'CONFIG_PACKAGE_kmod-igb-intel=m' > .config
         make defconfig
         
         make package/kmod-igb-intel/compile -j$(nproc) || make package/kmod-igb-intel/compile -j1 V=sc || exit 0
@@ -72,7 +74,7 @@ jobs:
         path: ${{ github.workspace }}/artifact/**/*
 
   deploy:
-    needs: [build_Modules]
+    needs: [build_igb-intel_Modules]
     name: Create release and upload artifacts
     runs-on: ubuntu-latest
 
@@ -90,8 +92,10 @@ jobs:
         done
         cd artifact && md5sum *.ipk > md5sum.txt
         cd ..
+
         wget -O release.txt $RELEASE_URL
         echo -e "\nUpdated at $(date)" >> release.txt
+
     - name: Upload firmware to release
       uses: softprops/action-gh-release@v1
       env:
