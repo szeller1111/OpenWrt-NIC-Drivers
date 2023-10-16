@@ -14,6 +14,7 @@ PKG_SOURCE:=igb-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://sourceforge.net/projects/e1000/files/igb%20stable/$(PKG_VERSION)/
 PKG_MD5SUM:=eaacff1aa1c82c275d9733bad6234d76
 
+
 include $(INCLUDE_DIR)/kernel.mk
 include $(INCLUDE_DIR)/package.mk
 
@@ -46,4 +47,3 @@ define KernelPackage/igb-intel/description
 endef
 
 $(eval $(call KernelPackage,igb-intel))
-
